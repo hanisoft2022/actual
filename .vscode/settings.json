@@ -1,0 +1,15 @@
+{
+    "cSpell.words": [
+        "codefactory",
+        "ddeok",
+        "skeletonizer",
+        "testtest"
+    ],
+    // antfu의 'File Nesting' 익스텐션 사용으로 해당 코드는 주석처리
+    // "explorer.fileNesting.enabled": true,
+    // "explorer.fileNesting.patterns": {
+    //     "*.dart": "$(capture).g.dart, $(capture).freezed.dart"
+    // },
+    
+}
+
