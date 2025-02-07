@@ -15,13 +15,3 @@ final goRouterProvider = Provider<GoRouter>(
         redirect: (context, state) => provider.redirectLogic(state));
   },
 );
-// final routerProvider = Provider<GoRouter>((ref) {
-//   final auth = ref.watch(authProvider.notifier);
-//   final routes = ref.watch(authProvider);
-
-//   return GoRouter(
-//     initialLocation: '/splash',
-//     routes: routes.routes,
-//     redirect: (context, state) => auth.redirectLogic(state),
-//   );
-// });

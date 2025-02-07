@@ -18,13 +18,11 @@ class _PaginationInfo {
   _PaginationInfo({this.fetchCount = 20, this.fetchMore = false, this.forceRefetch = false});
 }
 
-class PaginationProvider<T extends IModelWithId, U extends IBasePaginationRepository<T>>
-    extends StateNotifier<CursorPaginationBase> {
+class PaginationProvider<T extends IModelWithId, U extends IBasePaginationRepository<T>> extends StateNotifier<CursorPaginationBase> {
   final U repository;
 
   // throttle [1]. Throttle 인스턴스화
-  final paginationThrottle =
-      Throttle(const Duration(milliseconds: 500), initialValue: _PaginationInfo(), checkEquality: false);
+  final paginationThrottle = Throttle(const Duration(milliseconds: 500), initialValue: _PaginationInfo(), checkEquality: false);
 
   PaginationProvider({required this.repository}) : super(CursorPaginationLoading()) {
     paginate();
@@ -147,7 +145,7 @@ class PaginationProvider<T extends IModelWithId, U extends IBasePaginationReposi
       // [2-1] 추가 데이터를 가져오는 중인 상태로 전환
       // - 기존 데이터를 유지하며 추가 데이터를 가져오는 작업 진행 중임을 나타냄
       state = CursorPaginationFetchingMore(meta: pState.meta, data: pState.data);
-    } else if (state is CursorPagination && !forceRefetch) {
+    } else if (!forceRefetch && state is CursorPagination) {
       final pState = state as CursorPagination<T>;
       // [2-2] 기존 데이터를 유지하며 첫 페이지부터 새로고침 중인 상태로 전환
       // - 기존 데이터를 보존하면서 새 데이터를 가져오는 작업 진행 중임을 나타냄
@@ -178,112 +176,3 @@ class PaginationProvider<T extends IModelWithId, U extends IBasePaginationReposi
     }
   }
 }
-
-/*
-
-아래는 리팩토링 전 _throttledPagination 메서드
-
-void _throttledPagination(_PaginationInfo info) async {
-    try {
-      final fetchCount = info.fetchCount;
-      final fetchMore = info.fetchMore;
-      final forceRefetch = info.forceRefetch;
-
-      // 상태(State)는 아래와 같이 5가지임.
-      // 1) CursorPagination - 정상적으로 데이터가 있는 상태
-      // 2) CursorPaginationLoading - 데이터가 로딩 중인 상태 (현재 캐시 없음)
-      // 3) CursorPaginationError - 에러가 있는 상태
-      // 4) CursorPaginationRefetching - 첫 번째 페이지부터 다시 데이터를 가져올 때
-      // 5) CursorPaginationFetchingMore - 추가 데이터를 paginate 해오라는 요청을 받았을 때
-
-      // 상황(Situation)은 아래와 같이 나눌 수 있음:
-      // 데이터 요청 중단: 바로 반환하는 상황
-      // [1-1] 더 이상 가져올 데이터가 없는 경우 (hasMore이 false)
-      //       관련 상태: CursorPagination
-      // [1-2] 현재 로딩 중이거나 이미 데이터를 가져오는 작업이 진행 중인 경우
-      //       관련 상태: CursorPaginationLoading, CursorPaginationRefetching, CursorPaginationFetchingMore
-
-      // 데이터 요청: 바로 반환하지 않고 데이터 처리하여 반환하는 상황
-      // [2-1] 추가 데이터 로드: fetch more인 경우
-      //       관련 상태: CursorPaginationFetchingMore
-      // [2-2] 첫 페이지 로드: fetch more이 아닌 경우
-      //       관련 상태: CursorPaginationLoading, CursorPaginationRefetching
-      // [2-3] 공통 응답 처리: [2-1], [2-2] 공통
-
-      // [1-1] hasMore이 false여서 바로 return하는 경우
-      if (state is CursorPagination && !forceRefetch) {
-        // pState은 parsed state라는 뜻
-        final pState = state as CursorPagination;
-
-        if (!pState.meta.hasMore) {
-          return;
-        }
-      }
-      // [1-2] 이미 데이터를 가져오는 작업이 진행 중인 상황
-      // fetchMore가 true인 경우(추가 데이터를 요청하는 상황)에도,
-      // 아래 상태 중 하나에 해당하면 중복 요청을 방지하기 위해 반환:
-      // - 전체 데이터를 처음부터 로드 중 (CursorPaginationLoading)
-      // - 기존 데이터 유지 + 새로고침 진행 중 (CursorPaginationRefetching)
-      // - 추가 데이터를 가져오는 중 (CursorPaginationFetchingMore)
-      final isLoading = state is CursorPaginationLoading;
-      final isRefetching = state is CursorPaginationRefetching;
-      final isFetchingMore = state is CursorPaginationFetchingMore;
-
-      if (fetchMore && (isLoading || isRefetching || isFetchingMore)) {
-        return;
-      }
-
-      // 지금까지 그냥 return하는 경우 2가지를 살펴봄.
-      // 지금부터는 paginate하는 경우에 해당되는 코드임.
-
-      // [2-0] 우선 paginationParams 인스턴스를 생성한다.
-      PaginationParams paginationParams = PaginationParams(
-        count: fetchCount,
-      );
-
-      // [2-1] fetch more인 상황. 즉, 데이터를 추가로 더 가져오는 상황
-      if (fetchMore) {
-        final pState = state as CursorPagination<T>;
-
-        state = CursorPaginationFetchingMore(meta: pState.meta, data: pState.data);
-
-        paginationParams = paginationParams.copyWith(after: pState.data.last.id);
-      }
-
-      // [2-2] fetch more이 아닌 상황. 즉, 데이터를 처음부터 가져오는 상황
-      else {
-        // 만약 데이터가 있는 상태라면 (CursorPagination)
-        // 기존 데이터를 보존한 채 새로고침(API 요청)을 진행:
-        // 예: 필터 변경, 검색 조건 변경 등
-        if (state is CursorPagination && !forceRefetch) {
-          final pState = state as CursorPagination<T>;
-
-          state = CursorPaginationRefetching<T>(meta: pState.meta, data: pState.data);
-        } else {
-          // force refetch이거나 기존 상태가 없을 경우:
-          // 기존 데이터를 무시하고 처음부터 데이터 로드
-          state = CursorPaginationLoading();
-        }
-      }
-
-      // [2-3] [1], [2] 공통. API 요청 및 응답 처리
-      final resp = await repository.paginate(paginationParams: paginationParams);
-      if (state is CursorPaginationFetchingMore) {
-        final pState = state as CursorPaginationFetchingMore<T>;
-
-        // 기존 데이터에 새로운 데이터 추가
-        state = resp.copyWith(data: [...pState.data, ...resp.data]);
-      } else {
-        state = resp;
-      }
-    } catch (e, stack) {
-      // ignore: avoid_print
-      print(e);
-      // ignore: avoid_print
-      print(stack);
-      state = CursorPaginationError(message: '데이터를 가져오지 못했습니다.');
-    }
-  }
-}
-
-*/

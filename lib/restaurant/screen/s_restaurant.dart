@@ -18,10 +18,7 @@ class SRestaurant extends StatelessWidget {
     return FPaginationListView<MRestaurant>(
       provider: restaurantProvider,
       itemBuilder: <MRestaurant>(_, __, model) => InkWell(
-          onTap: () => context.goNamed(
-                SRestaurantDetail.routeName,
-                pathParameters: {'rid': model.id},
-              ),
+          onTap: () => context.goNamed(SRestaurantDetail.routeName, pathParameters: {'rid': model.id}),
           child: FRestaurantCard.fromMRestaurant(model: model)),
     );
   }

@@ -30,7 +30,6 @@ class _FPaginationListViewState<T extends IModelWithId> extends ConsumerState<FP
   @override
   void initState() {
     super.initState();
-
     controller.addListener(scrollListener);
   }
 
@@ -88,9 +87,7 @@ class _FPaginationListViewState<T extends IModelWithId> extends ConsumerState<FP
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: RefreshIndicator(
         onRefresh: () async {
-          ref.read(widget.provider.notifier).paginate(
-                forceRefetch: true,
-              );
+          ref.read(widget.provider.notifier).paginate(forceRefetch: true);
         },
         child: ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -103,10 +100,7 @@ class _FPaginationListViewState<T extends IModelWithId> extends ConsumerState<FP
             if (index == cp.data.length) {
               return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Center(
-                      child: cp is CursorPaginationFetchingMore
-                          ? const CircularProgressIndicator()
-                          : const Text('마지막 데이터입니다.')));
+                  child: Center(child: cp is CursorPaginationFetchingMore ? const CircularProgressIndicator() : const Text('마지막 데이터입니다.')));
             }
             final pItem = cp.data[index];
 

@@ -18,8 +18,7 @@ class UserMeStateNotifier extends StateNotifier<MUserBase?> {
   final UserMeRepository userMeRepository;
   final FlutterSecureStorage storage;
 
-  UserMeStateNotifier({required this.authRepository, required this.userMeRepository, required this.storage, te})
-      : super(MUserLoading()) {
+  UserMeStateNotifier({required this.authRepository, required this.userMeRepository, required this.storage, te}) : super(MUserLoading()) {
     // 내 정보 가져오기
     getMe();
   }

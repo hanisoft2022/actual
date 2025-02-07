@@ -80,7 +80,7 @@ class AuthProvider extends ChangeNotifier {
 
     // [1] 유저 정보가 없음.
     // 로그인중이라면 그대로 로그인 페이지에 두고
-    // 만약에 로그인중이 아니라면 로그읜 페이지로 이동
+    // 만약에 로그인중이 아니라면 로그인 페이지로 이동
     if (user == null) {
       print('! 유저 정보 없음. auth_provider.dart 파일 확인');
       return isLogInScreen ? null : '/login';

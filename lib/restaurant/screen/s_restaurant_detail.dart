@@ -34,10 +34,7 @@ class SRestaurantDetail extends ConsumerStatefulWidget {
 
   final String id;
 
-  const SRestaurantDetail({
-    super.key,
-    required this.id,
-  });
+  const SRestaurantDetail({super.key, required this.id});
 
   @override
   ConsumerState<SRestaurantDetail> createState() => _SRestaurantDetailState();
@@ -77,9 +74,7 @@ class _SRestaurantDetailState extends ConsumerState<SRestaurantDetail> {
     return LDefault(
         title: state.name,
         floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              context.pushNamed(SBasket.routeName);
-            },
+            onPressed: () => context.pushNamed(SBasket.routeName),
             backgroundColor: COLOR_PRIMARY,
             child: badges.Badge(
                 badgeStyle: const badges.BadgeStyle(badgeColor: Colors.white),
@@ -95,11 +90,7 @@ class _SRestaurantDetailState extends ConsumerState<SRestaurantDetail> {
             if (state is! MRestaurantDetail) const FRestaurantDetailSkeleton(),
             if (state is MRestaurantDetail) ...[
               const CategoryTitle(title: '메뉴'),
-              FRestaurantProductsList(
-                products: state.products,
-                restaurant: state,
-                ref: ref,
-              ),
+              FRestaurantProductsList(products: state.products, restaurant: state, ref: ref),
               const CategoryTitle(title: '후기'),
               if (ratingsState is CursorPagination<MRating>) FRestaurantDetailRatings(models: ratingsState.data)
             ]
@@ -205,13 +196,7 @@ class FRestaurantProductsList extends StatelessWidget {
                   onTap: () {
                     ref.read(basketProvider.notifier).addToBasket(
                           product: MProduct(
-                            id: item.id,
-                            name: item.name,
-                            imgUrl: item.imgUrl,
-                            detail: item.detail,
-                            price: item.price,
-                            restaurant: restaurant,
-                          ),
+                              id: item.id, name: item.name, imgUrl: item.imgUrl, detail: item.detail, price: item.price, restaurant: restaurant),
                         );
                   },
                   child: FProductCard.fromMRestaurantDetailProduct(model: item),
@@ -229,10 +214,7 @@ class FRestaurantProductsList extends StatelessWidget {
 class FRestaurantDetailRatings extends StatelessWidget {
   final List<MRating> models;
 
-  const FRestaurantDetailRatings({
-    super.key,
-    required this.models,
-  });
+  const FRestaurantDetailRatings({super.key, required this.models});
 
   @override
   Widget build(BuildContext context) {
@@ -240,8 +222,7 @@ class FRestaurantDetailRatings extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-                (context, index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0), child: FRatingCard.fromModel(model: models[index])),
+                (context, index) => Padding(padding: const EdgeInsets.only(bottom: 16.0), child: FRatingCard.fromModel(model: models[index])),
                 childCount: models.length)));
   }
 }
